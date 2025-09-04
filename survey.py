@@ -26,7 +26,6 @@ CATEGORY_MAP = {
 class QuestionManager:
     def __init__(self, page, language="en", on_complete=None):
         self.page = page
-        self.reset()
         # integration url
         self.APPS_SCRIPT_URL = self.APPS_SCRIPT_URL = os.getenv("APPS_SCRIPT_URL")
 
@@ -110,21 +109,6 @@ class QuestionManager:
         self.show_question()
 
     # -------------------- helpers --------------------
-
-    def reset(self):
-        self.current_index = 0
-        self.answers.clear()
-        self.is_completed = False
-        self.checkboxes.clear()
-        self.added_categories.clear()
-        self.blocks.clear()
-        self.shown_category_reminders.clear()
-
-        # Reset UI
-        self.progress_bar.value = 0
-        self.question_switcher.content = ft.Container()
-        self.show_question()
-        self.page.update()
 
     async def _show_category_then_start(self, category_key: int, target_index: int):
         """
