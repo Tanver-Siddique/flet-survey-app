@@ -7,6 +7,7 @@ import re
 import requests
 import string
 import random
+import os
 
 # Map spending/assume option ids -> category datasets
 CATEGORY_MAP = {
@@ -26,7 +27,7 @@ class QuestionManager:
     def __init__(self, page, language="en", on_complete=None):
         self.page = page
         # integration url
-        self.APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzcNrbSnmPUtg9A2iP2BlkRsY9Y3Zngi2INJIz33YxJ4t7rZ6Mm4_g3Xm1le_NEYMVsOA/exec"
+        self.APPS_SCRIPT_URL = self.APPS_SCRIPT_URL = os.getenv("APPS_SCRIPT_URL")
 
         self.language = language
         self.questions = list(general_info[language].items())
