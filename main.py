@@ -65,7 +65,7 @@ class Survey(ft.Container):
         self.content = ft.Column(
             expand=True,
             controls=[
-                ft.Divider(color=ft.Colors.TRANSPARENT, height=5),
+                ft.Divider(color=ft.Colors.TRANSPARENT, height=1),
                 ft.ResponsiveRow(
                     alignment=ft.MainAxisAlignment.CENTER,
                     vertical_alignment=ft.CrossAxisAlignment.CENTER,
