@@ -213,6 +213,7 @@ async def load_survey(page: ft.Page):
 
 # --------- MAIN ENTRY POINT ----------
 def main(page: ft.Page):
+    page.clean()
     page.title = "Survey"
     page.spacing = 0
     page.padding = 0
