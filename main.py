@@ -213,14 +213,12 @@ async def load_survey(page: ft.Page):
 
 # --------- MAIN ENTRY POINT ----------
 def main(page: ft.Page):
-    page.clean()
     page.title = "Survey"
     page.spacing = 0
     page.padding = 0
     page.fonts = {
         "title_font": "ZenDots-Regular.ttf"
     }
-
     page.theme = ft.Theme(
         scrollbar_theme=ft.ScrollbarTheme(
             thumb_color={
@@ -234,15 +232,28 @@ def main(page: ft.Page):
         )
     )
 
-    # Create and add survey directly (no loading screen)
-    survey_container = Survey(page)
-    page.on_resized = survey_container.on_view_change
-    page.add(survey_container)
+    # This function will reset and build the survey UI
+    def initialize_survey(e=None):
+        page.controls.clear()  # Clear any existing controls
+        
+        survey_container = Survey(page)
+        page.on_resized = survey_container.on_view_change
+        page.add(survey_container)
 
-    # Animate gradient
-    if hasattr(survey_container.title_text, "animate_gradient_task"):
-        page.run_task(survey_container.title_text.animate_gradient_task)
-    survey_container.on_view_change(None)
+        # Animate gradient
+        if hasattr(survey_container.title_text, "animate_gradient_task"):
+            page.run_task(survey_container.title_text.animate_gradient_task)
+        
+        # Trigger initial responsive layout
+        survey_container.on_view_change(None)
+        
+        page.update()
+
+    # Assign the reset function to the on_connect event
+    page.on_connect = initialize_survey
+
+    # Call the function once to build the UI for the very first connection
+    initialize_survey()
 
 
 if __name__ == "__main__":
