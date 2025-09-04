@@ -39,18 +39,19 @@ class QuestionManager:
 
         self.added_categories = []
         self.blocks = []
+        self.options_height = 300
         self.shown_category_reminders = set()
 
         self.CATEGORY_LABELS = {
-            1: {"en": "Start Fashion Category Questions",      "bn": "ফ্যাশন এর প্রশ্নসমূহ শুরু হচ্ছে"},
-            2: {"en": "Start Accessories Category Questions",  "bn": "এক্সেসরিজ এর প্রশ্নসমূহ শুরু হচ্ছে"},
-            3: {"en": "Start Beauty Category Questions",       "bn": "বিউটি এর প্রশ্নসমূহ শুরু হচ্ছে"},
-            4: {"en": "Start Dry Food Category Questions",     "bn": "শুকনো খাবার এর প্রশ্নসমূহ শুরু হচ্ছে"},
-            5: {"en": "Start Hobbies Category Questions",      "bn": "শখ এর প্রশ্নসমূহ শুরু হচ্ছে"},
-            6: {"en": "Start Home Decor Category Questions",   "bn": "হোম ডেকর এর প্রশ্নসমূহ শুরু হচ্ছে"},
-            7: {"en": "Start Home & Kitchen Category Questions","bn": "বাড়ি ও রান্নাঘর এর প্রশ্নসমূহ শুরু হচ্ছে"},
-            8: {"en": "Start Gadgets Category Questions",      "bn": "গ্যাজেট এর প্রশ্নসমূহ শুরু হচ্ছে"},
-            9: {"en": "Start Baby & Kids Category Questions",  "bn": "শিশু ও শিশুদের পণ্য এর প্রশ্নসমূহ শুরু হচ্ছে"},
+            1: {"en": "Fashion Category Questions",      "bn": "ফ্যাশন এর প্রশ্নসমূহ শুরু হচ্ছে"},
+            2: {"en": "Accessories Category Questions",  "bn": "এক্সেসরিজ এর প্রশ্নসমূহ শুরু হচ্ছে"},
+            3: {"en": "Beauty Category Questions",       "bn": "বিউটি এর প্রশ্নসমূহ শুরু হচ্ছে"},
+            4: {"en": "Dry Food Category Questions",     "bn": "শুকনো খাবার এর প্রশ্নসমূহ শুরু হচ্ছে"},
+            5: {"en": "Hobbies Category Questions",      "bn": "শখ এর প্রশ্নসমূহ শুরু হচ্ছে"},
+            6: {"en": "Home Decor Category Questions",   "bn": "হোম ডেকর এর প্রশ্নসমূহ শুরু হচ্ছে"},
+            7: {"en": "Home & Kitchen Category Questions","bn": "বাড়ি ও রান্নাঘর এর প্রশ্নসমূহ শুরু হচ্ছে"},
+            8: {"en": "Gadgets Category Questions",      "bn": "গ্যাজেট এর প্রশ্নসমূহ শুরু হচ্ছে"},
+            9: {"en": "Baby & Kids Category Questions",  "bn": "শিশু ও শিশুদের পণ্য এর প্রশ্নসমূহ শুরু হচ্ছে"},
         }
 
         self.submit_action_container = ft.AnimatedSwitcher(
@@ -92,6 +93,7 @@ class QuestionManager:
             reverse_duration=500,
             switch_in_curve=ft.AnimationCurve.EASE_IN_OUT,
             switch_out_curve=ft.AnimationCurve.EASE_IN_OUT,
+            expand=True
         )
 
         self.main_container = ft.Column(
@@ -103,12 +105,35 @@ class QuestionManager:
                     controls=[self.previous_button_controls, self.next_button_controls],
                     alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                 ),
-            ]
+            ],
+            expand=True,  # <-- so the column fills the card/viewport area
+            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,  # <-- pins top controls and buttons at bottom
         )
 
         self.show_question()
 
     # -------------------- helpers --------------------
+
+    def on_view_change(self):
+        """
+        Called by the outer Survey when the page resizes.
+        Recomputes the dynamic height for the options area and refreshes the current question.
+        """
+        try:
+            page_h = getattr(self.page, "height", None) or 600
+            # Reserve roughly 40-55% of the screen for the options area,
+            # but keep it within sensible min/max bounds for small/large screens.
+            computed = int(page_h * 0.45)
+            self.options_height = max(200, min(800, computed))
+        except Exception:
+            self.options_height = 300
+
+        # Re-render the current question so new height applies immediately
+        try:
+            self.show_question()
+        except Exception:
+            pass
+
 
     async def _show_category_then_start(self, category_key: int, target_index: int):
         """
@@ -154,7 +179,7 @@ class QuestionManager:
             self.page.update()
 
             # wait 2 seconds
-            await asyncio.sleep(3)
+            await asyncio.sleep(2)
 
             # mark shown and restore nav visibility
             self.shown_category_reminders.add(category_key)
@@ -366,6 +391,8 @@ class QuestionManager:
             spacing=15,
             alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            expand=True,
+            height=self.options_height,
             controls=[
                 ft.Text(
                     value=contact_prompts[self.language],
@@ -682,6 +709,7 @@ class QuestionManager:
 
         container = ft.Column(
             spacing=10,
+            expand=True,
             controls=[
                 ft.Markdown(
                     value=qdata["question"],
@@ -745,7 +773,9 @@ class QuestionManager:
             )
             options_container.controls.append(radio_group)
 
-        container.controls.append(ft.Container(content=options_container, expand=True, height=300))
+        container.controls.append(
+            ft.Container(content=options_container, expand=True, height=self.options_height)
+        )
         options_container.controls.append(self.other_textfield)
         return container
 
@@ -1084,7 +1114,7 @@ class QuestionManager:
 
         # Build and show end content
         end_content = ft.Column(
-            scroll=ft.ScrollMode.AUTO, expand=True, height=300,
+            scroll=ft.ScrollMode.AUTO, expand=True, height=max(300, int(self.page.height * 0.6)),
             controls=[
                 ft.Text("Thank you for completing the survey!" if self.language == "en" else "জরিপটি সম্পূর্ণ করার জন্য আপনাকে ধন্যবাদ!",
                         size=22, color=ft.Colors.GREEN, text_align=ft.TextAlign.CENTER,

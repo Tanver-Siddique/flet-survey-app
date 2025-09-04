@@ -100,7 +100,7 @@ spending = {
     "en": {
         "SML3": {
             "type": "checkbox",
-            "question": r'''Thinking about the last 3 months, which of the following categories have you spent money? (Select all that apply)''',
+            "question": r'''Thinking about the last 3 months, which of the following categories have you spent on money? (Select all that apply)''',
             "options": {
                 1: "Fashion (Stylish clothes, shoes)",
                 2: "Accessories (Bags, watches, jewelry)",
@@ -111,7 +111,7 @@ spending = {
                 7: "Home & Kitchen Essentials",
                 8: "Electronics & Gadgets",
                 9: "Baby & Kids Essentials",
-                10: "Not purchase anything"
+                10: "Did not purchase anything"
             }
         }
 
@@ -951,7 +951,7 @@ hobbies = {
             "question": "What is the biggest problem you face while shopping for hobby-related products?",
             "options": {
                 "1": "Limited variety",
-                "2": "High price compared to offline",
+                "2": "Higher price compared to offline",
                 "3": "Product quality not matching description",
                 "4": "Delivery issues",
                 "5": "Lack of trustworthy sellers",
@@ -1114,7 +1114,7 @@ homeDecor = {
             "question": "What challenges do you face when buying home décor online?",
             "options": {
                 "1": "Lack of trust in product quality",
-                "2": "High price compared to physical shops",
+                "2": "Higher price compared to physical shops",
                 "3": "Limited product variety",
                 "4": "Delivery issues",
                 "5": "Lack of varient designs",
@@ -1297,7 +1297,7 @@ homeKitchen = {
             "question": "What is the main challenge you face when buying home & kitchen products online?",
             "options": {
                 "1": "Not sure about product quality",
-                "2": "High price compared to physical shops",
+                "2": "Higher price compared to physical shops",
                 "3": "Limited product variety",
                 "4": "High delivery charges",
                 "5": "Lack of varient designs",

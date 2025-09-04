@@ -38,7 +38,6 @@ class Survey(ft.Container):
 
         self.main_content_container_column = ft.Column(
             expand=True,
-            scroll=ft.ScrollMode.ALWAYS,
             alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             controls=[
@@ -78,13 +77,13 @@ class Survey(ft.Container):
                         )
                     ],
                 ),
-                ft.Divider(color=ft.Colors.TRANSPARENT, height=10),
+                ft.Divider(color=ft.Colors.TRANSPARENT, height=5),
                 ft.ResponsiveRow(
                     controls=[self.language_slider],
                     alignment=ft.MainAxisAlignment.CENTER,
                     expand=False,
                 ),
-                ft.Divider(height=5, color=ft.Colors.TRANSPARENT),
+                ft.Divider(height=2, color=ft.Colors.TRANSPARENT),
                 self.main_content_container_column,
             ],
         )
@@ -183,15 +182,27 @@ class Survey(ft.Container):
             self._refresh_content()
 
     def on_view_change(self, e):
-        # Responsive title size
+        # Responsive title size using page.width
+        w = getattr(self.page, "width", 800) or 800
         size = 50
-        if self.page.width < 600:
+        if w < 600:
             size = 25
-        elif self.page.width < 900:
+        elif w < 900:
             size = 40
         if hasattr(self.title_text, "text_control"):
             self.title_text.text_control.size = size
+
+        # Also allow the question manager to react to page height/width changes
+        if self.question_manager:
+            try:
+                # call a new on_view_change on the QuestionManager (see survey.py changes)
+                self.question_manager.on_view_change()
+            except Exception:
+                # keep UI resilient — don't crash on unexpected resize logic
+                pass
+
         self.page.update()
+
 
     def clicked_start_survey(self, e):
         self.current_page = "questionnaire"
