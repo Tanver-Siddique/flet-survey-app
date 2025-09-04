@@ -114,6 +114,13 @@ class QuestionManager:
 
     # -------------------- helpers --------------------
 
+    def is_mobile_device(self):
+        """Check if the user is on a mobile device based on user agent."""
+        user_agent = self.page.client_user_agent or ""
+        mobile_keywords = ['android', 'iphone', 'ipad', 'ipod', 'blackberry', 
+                        'windows phone', 'mobile', 'webos', 'opera mini']
+        return any(keyword in user_agent.lower() for keyword in mobile_keywords)
+
     def on_view_change(self):
         """
         Called by the outer Survey when the page resizes.
@@ -350,10 +357,15 @@ class QuestionManager:
 
         error_text = ft.Text("", color=ft.Colors.RED)
 
-        submit_btn = ft.ElevatedButton(
-            text="Submit",
-            disabled=True,  # Initially disabled
-            style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=5)),
+        # Create a container for the submit button to better handle mobile events
+        submit_container = ft.Container(
+            content=ft.ElevatedButton(
+                text="Submit",
+                disabled=True,  # Initially disabled
+                style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=5)),
+            ),
+            # Add padding for better touch target on mobile
+            padding=ft.padding.only(top=10, bottom=10),
         )
 
         def is_valid_contact(value: str) -> bool:
@@ -372,7 +384,7 @@ class QuestionManager:
         def validate_input(e):
             value = entry_field.value.strip()
             valid = is_valid_contact(value)
-            submit_btn.disabled = not valid
+            submit_container.content.disabled = not valid
             if not valid and value:  # Show error only if user typed something invalid
                 error_text.value = "Please enter a valid 11-digit number or email."
             else:
@@ -381,18 +393,21 @@ class QuestionManager:
 
         entry_field.on_change = validate_input
 
-        submit_btn.on_click = lambda e: self.page.run_task(
-            self._process_final_submission, entry_field, error_text
-        )
+        # Modify the on_click handler for mobile compatibility
+        async def handle_submit(e):
+            # Prevent default behavior that might cause issues on mobile
+            e.control.disabled = True
+            self.page.update()
+            await self._process_final_submission(entry_field, error_text)
 
-        self.submit_action_container.content = submit_btn
+        submit_container.content.on_click = handle_submit
+
+        self.submit_action_container.content = submit_container
 
         self.question_switcher.content = ft.Column(
             spacing=15,
             alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-            expand=True,
-            height=self.options_height,
             controls=[
                 ft.Text(
                     value=contact_prompts[self.language],
@@ -562,19 +577,29 @@ class QuestionManager:
 
         entry_field.disabled = True
         error_text.value = ""
-        self.submit_action_container.content = ft.Row(
-            controls=[
-                ft.ProgressRing(width=24, height=24, color=ft.Colors.BLACK),
-                ft.Text(
-                    value="Submitting",
-                    color=ft.Colors.BROWN,
-                    size=15,
-                    weight=ft.FontWeight.W_600
-                )
-            ],
-            alignment=ft.MainAxisAlignment.CENTER
+        
+        # Create a more prominent loading indicator for mobile
+        self.submit_action_container.content = ft.Container(
+            content=ft.Column(
+                alignment=ft.MainAxisAlignment.CENTER,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                controls=[
+                    ft.ProgressRing(width=30, height=30, color=ft.Colors.BLUE),
+                    ft.Text(
+                        value="Submitting...",
+                        color=ft.Colors.BLUE,
+                        size=16,
+                        weight=ft.FontWeight.W_600
+                    )
+                ]
+            ),
+            padding=10,
+            height=80  # Fixed height for consistent mobile layout
         )
         self.page.update()
+
+        # Add a small delay to ensure UI updates before submission
+        await asyncio.sleep(0.1)
 
         # Ensure submission id exists BEFORE sending
         if "Submission_ID" not in self.answers:
